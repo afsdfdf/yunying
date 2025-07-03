@@ -446,9 +446,10 @@ const response = await fetch('/api/content/generate', {
 
 1. **输入服务ID**:
    ```
-   1001
-   1002
-   1003
+   1825
+   1446
+   1238
+   1793
    ```
 
 2. **输入下单链接**:
@@ -467,10 +468,19 @@ const response = await fetch('/api/content/generate', {
 
 4. **生成结果**:
    ```
-   1001|https://example.com/order1|100
-   1002|https://example.com/order2|245
-   1003|https://example.com/order3|150
+   1825|https://example.com/order1|100
+   1446|https://example.com/order2|245
+   1238|https://example.com/order3|150
    ```
+
+**推荐服务ID**:
+- 浏览量：1825, 1446
+- 点赞：1238, 1793  
+- 转发：885, 1794
+- TG浏览量：1082, 1031
+- 表情：1009, 1833
+- 网站浏览量：1841
+- 注意：前面贵的后面便宜
 
 **技术特性**:
 - 响应式三列布局设计

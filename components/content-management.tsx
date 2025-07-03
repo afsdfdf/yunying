@@ -759,6 +759,14 @@ export default function ContentManagement({ projectId }: ContentManagementProps)
                       <p>• <strong>结果格式</strong>：服务ID|下单链接|数量</p>
                       <p>• <span className="text-blue-700">生成规则：服务ID与下单链接全部组合，每个组合一条结果</span></p>
                       <p>• <span className="text-blue-700">数量分配：如只输入一行，所有组合用这一数量；多行则按顺序分配，不够用第1行</span></p>
+                      <p>• <strong>推荐服务ID</strong>：</p>
+                      <p>&nbsp;&nbsp;浏览量：1825, 1446</p>
+                      <p>&nbsp;&nbsp;点赞：1238, 1793</p>
+                      <p>&nbsp;&nbsp;转发：885, 1794</p>
+                      <p>&nbsp;&nbsp;TG浏览量：1082, 1031</p>
+                      <p>&nbsp;&nbsp;表情：1009, 1833</p>
+                      <p>&nbsp;&nbsp;网站浏览量：1841</p>
+                      <p>&nbsp;&nbsp;<span className="text-orange-600">前面贵的后面便宜</span></p>
                     </div>
                   </CardContent>
                 </Card>
