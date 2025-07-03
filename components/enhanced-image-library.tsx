@@ -13,10 +13,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Upload, ImageIcon, Search, Download, Edit, Trash2, Copy, Tag, Grid, List } from "lucide-react"
+import { Upload, ImageIcon, Search, Download, Edit, Trash2, Copy, Tag, Grid, List, Plus } from "lucide-react"
 import ImageUpload from "./image-upload"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 
 interface EnhancedImageLibraryProps {
   projectId: string
@@ -30,6 +35,11 @@ export default function EnhancedImageLibrary({ projectId }: EnhancedImageLibrary
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedImages, setSelectedImages] = useState<string[]>([])
   const [showUploadDialog, setShowUploadDialog] = useState(false)
+  const [showTagDialog, setShowTagDialog] = useState(false)
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false)
+  const [newTag, setNewTag] = useState("")
+  const [newCategory, setNewCategory] = useState("")
+  const [bulkUploadMode, setBulkUploadMode] = useState(false)
 
   const categories = [
     { value: "all", label: "全部图片" },
@@ -47,6 +57,7 @@ export default function EnhancedImageLibrary({ projectId }: EnhancedImageLibrary
 
   const loadImages = async () => {
     try {
+      setLoading(true)
       const params = new URLSearchParams({ projectId })
       if (selectedCategory !== "all") {
         params.append("category", selectedCategory)
@@ -72,22 +83,118 @@ export default function EnhancedImageLibrary({ projectId }: EnhancedImageLibrary
     setSelectedImages((prev) => (prev.includes(imageId) ? prev.filter((id) => id !== imageId) : [...prev, imageId]))
   }
 
+  const handleSelectAll = () => {
+    if (selectedImages.length === filteredImages.length) {
+      setSelectedImages([])
+    } else {
+      setSelectedImages(filteredImages.map(image => image.id))
+    }
+  }
+
   const handleBulkAction = async (action: string) => {
     if (selectedImages.length === 0) return
 
     switch (action) {
       case "delete":
         // 实现批量删除
-        console.log("Bulk delete:", selectedImages)
+        try {
+          const res = await fetch("/api/images/bulk-delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ imageIds: selectedImages }),
+          })
+          
+          if (res.ok) {
+            setImages(prev => prev.filter(image => !selectedImages.includes(image.id)))
+            setSelectedImages([])
+          }
+        } catch (error) {
+          console.error("Error deleting images:", error)
+        }
         break
       case "download":
         // 实现批量下载
-        console.log("Bulk download:", selectedImages)
+        selectedImages.forEach(id => {
+          const image = images.find(img => img.id === id)
+          if (image?.blob_url) {
+            const a = document.createElement("a")
+            a.href = image.blob_url
+            a.download = image.original_name || `image-${id}.jpg`
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+          }
+        })
         break
       case "category":
-        // 实现批量分类
-        console.log("Bulk categorize:", selectedImages)
+        // 打开批量分类对话框
+        setShowCategoryDialog(true)
         break
+      case "tag":
+        // 打开批量标签对话框
+        setShowTagDialog(true)
+        break
+    }
+  }
+
+  const handleApplyCategory = async () => {
+    if (!newCategory || selectedImages.length === 0) return
+
+    try {
+      const res = await fetch("/api/images/update-category", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          imageIds: selectedImages,
+          category: newCategory
+        }),
+      })
+      
+      if (res.ok) {
+        // 更新本地状态
+        setImages(prev => prev.map(image => {
+          if (selectedImages.includes(image.id)) {
+            return { ...image, category: newCategory }
+          }
+          return image
+        }))
+        setShowCategoryDialog(false)
+        setNewCategory("")
+      }
+    } catch (error) {
+      console.error("Error updating category:", error)
+    }
+  }
+
+  const handleApplyTag = async () => {
+    if (!newTag || selectedImages.length === 0) return
+
+    try {
+      const res = await fetch("/api/images/add-tag", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          imageIds: selectedImages,
+          tag: newTag
+        }),
+      })
+      
+      if (res.ok) {
+        // 更新本地状态
+        setImages(prev => prev.map(image => {
+          if (selectedImages.includes(image.id)) {
+            const tags = image.tags || []
+            if (!tags.includes(newTag)) {
+              return { ...image, tags: [...tags, newTag] }
+            }
+          }
+          return image
+        }))
+        setShowTagDialog(false)
+        setNewTag("")
+      }
+    } catch (error) {
+      console.error("Error adding tag:", error)
     }
   }
 
@@ -118,7 +225,59 @@ export default function EnhancedImageLibrary({ projectId }: EnhancedImageLibrary
                 <DialogTitle>上传图片</DialogTitle>
                 <DialogDescription>支持单个或批量上传图片到项目图片库</DialogDescription>
               </DialogHeader>
-              <ImageUpload projectId={projectId} multiple={true} maxFiles={20} onImageUploaded={handleImageUploaded} />
+              
+              <Tabs defaultValue="upload" className="mt-4">
+                <TabsList className="grid grid-cols-2">
+                  <TabsTrigger value="upload">普通上传</TabsTrigger>
+                  <TabsTrigger value="bulk">批量上传</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="upload" className="mt-4">
+                  <ImageUpload 
+                    projectId={projectId} 
+                    multiple={true} 
+                    maxFiles={20} 
+                    onImageUploaded={handleImageUploaded} 
+                  />
+                </TabsContent>
+                
+                <TabsContent value="bulk" className="mt-4">
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="image-category">图片分类</Label>
+                        <Select defaultValue="social">
+                          <SelectTrigger>
+                            <SelectValue placeholder="选择分类" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.filter(c => c.value !== "all").map(category => (
+                              <SelectItem key={category.value} value={category.value}>
+                                {category.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="image-tags">图片标签</Label>
+                        <Input 
+                          id="image-tags" 
+                          placeholder="输入标签，用逗号分隔" 
+                        />
+                      </div>
+                    </div>
+                    
+                    <ImageUpload 
+                      projectId={projectId} 
+                      multiple={true} 
+                      maxFiles={50} 
+                      onImageUploaded={handleImageUploaded} 
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
             </DialogContent>
           </Dialog>
         </div>
@@ -183,6 +342,10 @@ export default function EnhancedImageLibrary({ projectId }: EnhancedImageLibrary
                 </Button>
               </div>
               <div className="flex space-x-2">
+                <Button variant="outline" size="sm" onClick={() => handleBulkAction("tag")}>
+                  <Plus className="w-4 h-4 mr-1" />
+                  添加标签
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => handleBulkAction("category")}>
                   <Tag className="w-4 h-4 mr-1" />
                   批量分类
@@ -204,11 +367,20 @@ export default function EnhancedImageLibrary({ projectId }: EnhancedImageLibrary
       {/* 图片展示 */}
       <Card>
         <CardHeader>
-          <CardTitle>图片库</CardTitle>
-          <CardDescription>
-            共 {filteredImages.length} 张图片
-            {selectedCategory !== "all" && ` · ${categories.find((c) => c.value === selectedCategory)?.label}`}
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>图片库</CardTitle>
+              <CardDescription>
+                共 {filteredImages.length} 张图片
+                {selectedCategory !== "all" && ` · ${categories.find((c) => c.value === selectedCategory)?.label}`}
+              </CardDescription>
+            </div>
+            {filteredImages.length > 0 && (
+              <Button variant="ghost" size="sm" onClick={handleSelectAll}>
+                {selectedImages.length === filteredImages.length ? "取消全选" : "全选"}
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -250,63 +422,59 @@ export default function EnhancedImageLibrary({ projectId }: EnhancedImageLibrary
                         <Copy className="w-4 h-4" />
                       </Button>
                       <Button size="sm" variant="secondary">
-                        <Edit className="w-4 h-4" />
+                        <Download className="w-4 h-4" />
                       </Button>
                       <Button size="sm" variant="secondary">
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
-                  <div className="mt-2">
-                    <p className="text-xs font-medium truncate">{image.original_name}</p>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-xs text-muted-foreground">{Math.round(image.file_size / 1024)}KB</span>
-                      {image.category && (
-                        <Badge variant="outline" className="text-xs">
-                          {categories.find((c) => c.value === image.category)?.label}
-                        </Badge>
-                      )}
+                  {image.category && (
+                    <div className="absolute bottom-2 left-2">
+                      <Badge variant="secondary" className="text-xs">
+                        {categories.find((c) => c.value === image.category)?.label || image.category}
+                      </Badge>
                     </div>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
           ) : (
             <div className="space-y-2">
               {filteredImages.map((image) => (
-                <div key={image.id} className="flex items-center space-x-4 p-3 border rounded-lg hover:bg-gray-50">
+                <div key={image.id} className="flex items-center border rounded-lg p-2">
                   <Checkbox
                     checked={selectedImages.includes(image.id)}
                     onCheckedChange={() => handleImageSelect(image.id)}
+                    className="mr-3"
                   />
-                  <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                  <div className="h-12 w-12 bg-gray-100 rounded-md overflow-hidden mr-3">
                     <img
                       src={image.blob_url || "/placeholder.svg"}
                       alt={image.original_name}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium">{image.original_name}</p>
-                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                      <span>{Math.round(image.file_size / 1024)}KB</span>
-                      <span>
-                        {image.width}×{image.height}
-                      </span>
-                      <span>{new Date(image.created_at).toLocaleDateString()}</span>
-                    </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{image.original_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {(image.file_size / 1024).toFixed(1)} KB · 
+                      {new Date(image.created_at).toLocaleDateString()}
+                    </p>
                   </div>
-                  {image.category && (
-                    <Badge variant="outline">{categories.find((c) => c.value === image.category)?.label}</Badge>
-                  )}
-                  <div className="flex space-x-2">
-                    <Button size="sm" variant="outline">
+                  <div className="flex items-center space-x-1">
+                    {image.category && (
+                      <Badge variant="outline" className="mr-2">
+                        {categories.find((c) => c.value === image.category)?.label || image.category}
+                      </Badge>
+                    )}
+                    <Button size="sm" variant="ghost">
                       <Copy className="w-4 h-4" />
                     </Button>
-                    <Button size="sm" variant="outline">
-                      <Edit className="w-4 h-4" />
+                    <Button size="sm" variant="ghost">
+                      <Download className="w-4 h-4" />
                     </Button>
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="ghost">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -316,6 +484,74 @@ export default function EnhancedImageLibrary({ projectId }: EnhancedImageLibrary
           )}
         </CardContent>
       </Card>
+
+      {/* 标签对话框 */}
+      <Dialog open={showTagDialog} onOpenChange={setShowTagDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>添加标签</DialogTitle>
+            <DialogDescription>
+              为 {selectedImages.length} 张选中的图片添加标签
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-tag">标签名称</Label>
+              <Input
+                id="new-tag"
+                placeholder="输入标签名称"
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTagDialog(false)}>
+              取消
+            </Button>
+            <Button onClick={handleApplyTag} disabled={!newTag}>
+              应用标签
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 分类对话框 */}
+      <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>设置分类</DialogTitle>
+            <DialogDescription>
+              为 {selectedImages.length} 张选中的图片设置分类
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-category">选择分类</Label>
+              <Select value={newCategory} onValueChange={setNewCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="选择分类" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.filter(c => c.value !== "all").map(category => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCategoryDialog(false)}>
+              取消
+            </Button>
+            <Button onClick={handleApplyCategory} disabled={!newCategory}>
+              应用分类
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

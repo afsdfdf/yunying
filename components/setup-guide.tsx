@@ -122,9 +122,6 @@ GRANT EXECUTE ON FUNCTION exec_sql(text) TO service_role;`
                     <Button asChild>
                       <a href="/setup">开始自动配置</a>
                     </Button>
-                    <Button variant="outline" asChild>
-                      <a href="/database-test">检查数据库状态</a>
-                    </Button>
                   </div>
                 </CardContent>
               </Card>

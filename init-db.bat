@@ -1,0 +1,14 @@
+@echo off
+echo 正在初始化数据库...
+
+set NEXT_PUBLIC_SUPABASE_URL=https://bndruoeqxhydszlirmoe.supabase.co
+set SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuZHJ1b2VxeGh5ZHN6bGlybW9lIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NzI2NzYyMiwiZXhwIjoyMDYyODQzNjIyfQ.8bZkxPdVldfrspFLDdQNqjYDLkkYIKDJWWNfxRk2gXc
+
+echo 使用的Supabase URL: %NEXT_PUBLIC_SUPABASE_URL%
+echo 服务角色密钥已设置
+
+node init-database.js
+
+echo.
+echo 初始化完成!
+pause 

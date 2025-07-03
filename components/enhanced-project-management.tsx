@@ -30,9 +30,35 @@ import {
   DollarSign,
   Users,
   Target,
+  Settings,
 } from "lucide-react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+
+interface Task {
+  id: string;
+  status: string;
+  created_at: string;
+  project_id: string;
+  title: string;
+  description: string;
+  priority: string;
+  assignee: string;
+  dueDate: Date | null;
+  category: string;
+}
+
+interface Milestone {
+  id: string;
+  name: string;
+  // Add other milestone properties as needed
+}
+
+interface TeamMember {
+  id: string;
+  name: string;
+  // Add other team member properties as needed
+}
 
 interface ProjectManagementProps {
   projectId: string
@@ -55,9 +81,9 @@ export default function EnhancedProjectManagement({ projectId }: ProjectManageme
     market_cap: "",
   })
 
-  const [tasks, setTasks] = useState([])
-  const [milestones, setMilestones] = useState([])
-  const [teamMembers, setTeamMembers] = useState([])
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [milestones, setMilestones] = useState<Milestone[]>([])
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [loading, setLoading] = useState(true)
 
   // Task management
@@ -143,6 +169,10 @@ export default function EnhancedProjectManagement({ projectId }: ProjectManageme
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">项目管理</h2>
         <div className="flex space-x-2">
+          <Button variant="outline" onClick={() => window.location.href = `/settings?project=${projectId}`}>
+            <Settings className="w-4 h-4 mr-2" />
+            项目设置
+          </Button>
           <Dialog open={showNewTaskDialog} onOpenChange={setShowNewTaskDialog}>
             <DialogTrigger asChild>
               <Button>
@@ -257,8 +287,8 @@ export default function EnhancedProjectManagement({ projectId }: ProjectManageme
                       <PopoverContent className="w-auto p-0">
                         <Calendar
                           mode="single"
-                          selected={newTask.dueDate}
-                          onSelect={(date) => setNewTask({ ...newTask, dueDate: date })}
+                          selected={newTask.dueDate || undefined}
+                          onSelect={(date) => setNewTask({ ...newTask, dueDate: date || null })}
                           initialFocus
                         />
                       </PopoverContent>
@@ -486,8 +516,8 @@ export default function EnhancedProjectManagement({ projectId }: ProjectManageme
                     <PopoverContent className="w-auto p-0">
                       <Calendar
                         mode="single"
-                        selected={project.launch_date}
-                        onSelect={(date) => setProject({ ...project, launch_date: date })}
+                        selected={project.launch_date || undefined}
+                        onSelect={(date) => setProject({ ...project, launch_date: date || null })}
                         initialFocus
                       />
                     </PopoverContent>

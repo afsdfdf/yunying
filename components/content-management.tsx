@@ -34,6 +34,8 @@ import {
   Clock,
   CheckCircle,
   XCircle,
+  ShoppingCart,
+  RefreshCw,
 } from "lucide-react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
@@ -42,19 +44,51 @@ interface ContentManagementProps {
   projectId: string
 }
 
+interface Template {
+  id: string
+  name: string
+  category: string
+  content: string
+  platforms: string[]
+  variables: string[]
+  created_at: string
+  project_id: string
+}
+
+interface ScheduledPost {
+  id: string
+  platform: string
+  content: string
+  scheduledTime: Date | null
+  templateId: string
+  status: string
+  created_at: string
+  project_id: string
+}
+
 export default function ContentManagement({ projectId }: ContentManagementProps) {
-  const [templates, setTemplates] = useState([])
-  const [scheduledPosts, setScheduledPosts] = useState([])
-  const [hashtags, setHashtags] = useState([])
+  const [templates, setTemplates] = useState<Template[]>([])
+  const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([])
+  const [hashtags, setHashtags] = useState<string[]>([])
   const [showTemplateDialog, setShowTemplateDialog] = useState(false)
   const [showScheduleDialog, setShowScheduleDialog] = useState(false)
+  
+  // 批量下单功能状态
+  const [batchOrderData, setBatchOrderData] = useState({
+    serviceIds: "",
+    orderLinks: "",
+    quantities: "",
+    randomRange: { min: 100, max: 200 }
+  })
+  const [generatedResults, setGeneratedResults] = useState("")
+  const [copied, setCopied] = useState(false)
 
   const [newTemplate, setNewTemplate] = useState({
     name: "",
     category: "announcement",
     content: "",
-    platforms: [],
-    variables: [],
+    platforms: [] as string[],
+    variables: [] as string[],
   })
 
   const [newScheduledPost, setNewScheduledPost] = useState({
@@ -143,6 +177,57 @@ export default function ContentManagement({ projectId }: ContentManagementProps)
       ...prev,
       content: prev.content + ` ${hashtag}`,
     }))
+  }
+
+  // 批量下单功能处理函数
+  const generateBatchOrders = () => {
+    const serviceIds = batchOrderData.serviceIds.split('\n').filter(id => id.trim())
+    const orderLinks = batchOrderData.orderLinks.split('\n').filter(link => link.trim())
+    const quantities = batchOrderData.quantities.split('\n').filter(qty => qty.trim())
+    
+    if (serviceIds.length === 0 || orderLinks.length === 0) {
+      alert('请至少输入一个服务ID和下单链接')
+      return
+    }
+    
+    const results: string[] = []
+    let qIndex = 0
+    for (let i = 0; i < serviceIds.length; i++) {
+      for (let j = 0; j < orderLinks.length; j++) {
+        // 数量分配规则
+        let quantity = quantities[qIndex] || quantities[0] || '100'
+        // 处理随机数量生成
+        if (quantity.includes(',')) {
+          const [min, max] = quantity.split(',').map(n => parseInt(n.trim()))
+          if (!isNaN(min) && !isNaN(max) && min <= max) {
+            quantity = (Math.floor(Math.random() * (max - min + 1)) + min).toString()
+          }
+        }
+        results.push(`${serviceIds[i]}|${orderLinks[j]}|${quantity}`)
+        qIndex++
+      }
+    }
+    setGeneratedResults(results.join('\n'))
+  }
+
+  const copyResults = async () => {
+    try {
+      await navigator.clipboard.writeText(generatedResults)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      console.error('复制失败:', error)
+    }
+  }
+
+  const clearBatchOrderData = () => {
+    setBatchOrderData({
+      serviceIds: "",
+      orderLinks: "",
+      quantities: "",
+      randomRange: { min: 100, max: 200 }
+    })
+    setGeneratedResults("")
   }
 
   return (
@@ -409,10 +494,11 @@ export default function ContentManagement({ projectId }: ContentManagementProps)
       </div>
 
       <Tabs defaultValue="templates" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="templates">内容模板</TabsTrigger>
           <TabsTrigger value="scheduled">定时发布</TabsTrigger>
           <TabsTrigger value="hashtags">标签管理</TabsTrigger>
+          <TabsTrigger value="batch-order">批量下单</TabsTrigger>
           <TabsTrigger value="approval">审核流程</TabsTrigger>
         </TabsList>
 
@@ -561,6 +647,121 @@ export default function ContentManagement({ projectId }: ContentManagementProps)
                     </div>
                   ))}
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="batch-order" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <ShoppingCart className="w-5 h-5 mr-2" />
+                批量下单工具
+              </CardTitle>
+              <CardDescription>批量生成下单数据，支持服务ID与下单链接的全部组合（笛卡尔积），数量支持随机范围</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* 输入区域 */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  {/* 服务ID输入 */}
+                  <div className="space-y-2">
+                    <Label htmlFor="service-ids">服务ID</Label>
+                    <Textarea
+                      id="service-ids"
+                      placeholder="每行输入一个服务ID\n例如：\n1001\n1002\n1003"
+                      value={batchOrderData.serviceIds}
+                      onChange={(e) => setBatchOrderData({ ...batchOrderData, serviceIds: e.target.value })}
+                      rows={8}
+                      className="font-mono text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground">每行一个服务ID</p>
+                  </div>
+
+                  {/* 下单链接输入 */}
+                  <div className="space-y-2">
+                    <Label htmlFor="order-links">下单链接</Label>
+                    <Textarea
+                      id="order-links"
+                      placeholder="每行输入一个下单链接\n例如：\nhttps://example.com/order1\nhttps://example.com/order2"
+                      value={batchOrderData.orderLinks}
+                      onChange={(e) => setBatchOrderData({ ...batchOrderData, orderLinks: e.target.value })}
+                      rows={8}
+                      className="font-mono text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground">每行一个下单链接</p>
+                  </div>
+
+                  {/* 数量输入 */}
+                  <div className="space-y-2">
+                    <Label htmlFor="quantities">下单数量</Label>
+                    <Textarea
+                      id="quantities"
+                      placeholder="每行输入一个数量\n固定数量：100\n随机范围：100,200\n留空使用默认值"
+                      value={batchOrderData.quantities}
+                      onChange={(e) => setBatchOrderData({ ...batchOrderData, quantities: e.target.value })}
+                      rows={8}
+                      className="font-mono text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      固定数量直接输入数字<br />
+                      随机范围输入：最小值,最大值<br />
+                      例如：100,200 表示100-200之间的随机数<br />
+                      <span className="text-blue-700">数量分配规则：如果只输入一行，所有组合都用这一数量；多行则按顺序分配给每个组合，不够则用第1行</span>
+                    </p>
+                  </div>
+                </div>
+
+                {/* 操作按钮 */}
+                <div className="flex space-x-2">
+                  <Button onClick={generateBatchOrders} className="flex-1">
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    生成结果
+                  </Button>
+                  <Button variant="outline" onClick={clearBatchOrderData}>
+                    清空数据
+                  </Button>
+                </div>
+
+                {/* 生成结果 */}
+                {generatedResults && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>生成结果</Label>
+                      <Button variant="outline" size="sm" onClick={copyResults}>
+                        {copied ? <CheckCircle className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
+                        {copied ? "已复制" : "复制结果"}
+                      </Button>
+                    </div>
+                    <Textarea
+                      value={generatedResults}
+                      readOnly
+                      rows={10}
+                      className="font-mono text-sm bg-gray-50"
+                      placeholder="生成的结果将显示在这里..."
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      格式：服务ID|下单链接|数量
+                    </p>
+                  </div>
+                )}
+
+                {/* 使用说明 */}
+                <Card className="bg-blue-50 border-blue-200">
+                  <CardContent className="pt-4">
+                    <h4 className="font-medium text-blue-800 mb-2">使用说明</h4>
+                    <div className="text-sm text-blue-700 space-y-1">
+                      <p>• <strong>服务ID</strong>：每行输入一个服务ID</p>
+                      <p>• <strong>下单链接</strong>：每行输入一个对应的下单链接</p>
+                      <p>• <strong>数量</strong>：支持固定数量和随机范围</p>
+                      <p>• <strong>随机数量</strong>：输入格式为"最小值,最大值"，如"100,200"</p>
+                      <p>• <strong>结果格式</strong>：服务ID|下单链接|数量</p>
+                      <p>• <span className="text-blue-700">生成规则：服务ID与下单链接全部组合，每个组合一条结果</span></p>
+                      <p>• <span className="text-blue-700">数量分配：如只输入一行，所有组合用这一数量；多行则按顺序分配，不够用第1行</span></p>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </CardContent>
           </Card>

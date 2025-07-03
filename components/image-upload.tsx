@@ -7,8 +7,15 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Upload, ImageIcon } from "lucide-react"
-import { uploadImage, type UploadedImage } from "@/lib/blob-storage"
-import { saveImageToDatabase } from "@/lib/database"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+
+interface UploadedImage {
+  url: string
+  filename: string
+  size: number
+  type: string
+}
 
 interface ImageUploadProps {
   projectId?: string
@@ -28,6 +35,8 @@ export default function ImageUpload({
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [dragActive, setDragActive] = useState(false)
+  const [category, setCategory] = useState("")
+  const [tags, setTags] = useState("")
 
   const handleFiles = useCallback(
     async (files: FileList) => {
@@ -43,25 +52,39 @@ export default function ImageUpload({
         const file = filesToUpload[i]
 
         try {
-          // Upload to Vercel Blob
-          const uploadedImage = await uploadImage(file, projectId)
+          // 创建FormData
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('projectId', projectId || '')
+          if (category) {
+            formData.append('category', category)
+          }
+          if (tags) {
+            formData.append('tags', tags)
+          }
 
-          // Save to database
-          const savedImage = await saveImageToDatabase({
-            filename: uploadedImage.filename,
-            original_name: file.name,
-            file_size: uploadedImage.size,
-            mime_type: uploadedImage.type,
-            blob_url: uploadedImage.url,
-            project_id: projectId || null,
-            uploaded_by: null, // TODO: Get current user ID
+          // 上传到API端点
+          const response = await fetch('/api/images', {
+            method: 'POST',
+            body: formData,
           })
+
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(error.error || '上传失败')
+          }
+
+          const result = await response.json()
+          const uploadedImage = result.image
 
           // Notify parent component
           if (onImageUploaded) {
             onImageUploaded({
-              ...uploadedImage,
-              id: savedImage.id,
+              url: uploadedImage.blob_url,
+              filename: uploadedImage.filename,
+              size: uploadedImage.file_size,
+              type: uploadedImage.mime_type,
+              id: uploadedImage.id,
             })
           }
 
@@ -69,13 +92,15 @@ export default function ImageUpload({
           setUploadProgress(((i + 1) / totalFiles) * 100)
         } catch (error) {
           console.error("Error uploading file:", file.name, error)
+          // 显示错误提示
+          alert(`上传失败: ${error instanceof Error ? error.message : '未知错误'}`)
         }
       }
 
       setUploading(false)
       setUploadProgress(0)
     },
-    [projectId, maxFiles, onImageUploaded],
+    [projectId, maxFiles, onImageUploaded, category, tags],
   )
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -114,6 +139,32 @@ export default function ImageUpload({
   return (
     <Card className={className}>
       <CardContent className="p-6">
+        <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block mb-1 font-medium">图片分类</label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="选择分类" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="logo">项目Logo</SelectItem>
+                <SelectItem value="banner">横幅图片</SelectItem>
+                <SelectItem value="social">社交媒体</SelectItem>
+                <SelectItem value="tutorial">教程图片</SelectItem>
+                <SelectItem value="marketing">营销素材</SelectItem>
+                <SelectItem value="other">其他</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">图片标签（用逗号分隔）</label>
+            <Input
+              value={tags}
+              onChange={e => setTags(e.target.value)}
+              placeholder="如：logo, banner, 活动"
+            />
+          </div>
+        </div>
         <div
           className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
             dragActive ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400"

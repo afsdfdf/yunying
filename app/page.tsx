@@ -1,21 +1,25 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { BarChart3, Users, Calendar, Twitter, MessageSquare, Globe, Settings, Database, FileText } from "lucide-react"
+import { BarChart3, Users, Calendar, Twitter, MessageSquare, Globe, Settings, FileText, ImageIcon, Sparkles } from "lucide-react"
 import ProjectSelector from "@/components/project-selector"
 import EnhancedProjectManagement from "@/components/enhanced-project-management"
-import TwitterManagement from "@/components/twitter-management"
-import TelegramManagement from "@/components/telegram-management"
+import EnhancedTwitterManagement from "@/components/enhanced-twitter-management"
+import EnhancedTelegramManagement from "@/components/enhanced-telegram-management"
+import EnhancedImageLibrary from "@/components/enhanced-image-library"
+import ContentPlanner from "@/components/content-planner"
 import AdvancedAnalytics from "@/components/advanced-analytics"
 import UserManagement from "@/components/user-management"
 import ContentManagement from "@/components/content-management"
 import CreateProjectDialog from "@/components/create-project-dialog"
-import DatabaseConnectionStatus from "@/components/database-connection-status"
+import Image from "next/image"
 
 export default function Dashboard() {
+  const router = useRouter()
   const [selectedProject, setSelectedProject] = useState("project-1")
   const [activeTab, setActiveTab] = useState("overview")
 
@@ -40,7 +44,6 @@ export default function Dashboard() {
     },
   ])
   const [loading, setLoading] = useState(true)
-  const [showDatabaseStatus, setShowDatabaseStatus] = useState(false)
 
   useEffect(() => {
     async function loadProjects() {
@@ -109,17 +112,34 @@ export default function Dashboard() {
           <div className="flex items-center space-x-4">
             <h1 className="text-2xl font-bold text-gray-900">加密项目运营系统</h1>
             <ProjectSelector
-              projects={projects}
-              selectedProject={selectedProject}
               onProjectChange={setSelectedProject}
+              currentProjectId={selectedProject}
             />
           </div>
           <div className="flex items-center space-x-3">
-            <Button variant="outline" size="sm" onClick={() => setShowDatabaseStatus(!showDatabaseStatus)}>
-              <Database className="w-4 h-4 mr-2" />
-              数据库状态
-            </Button>
-            <Button variant="outline" size="sm">
+            <a
+              href="https://tglaren.com/services"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="电报拉人网 tglaren.com"
+              className="inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 transition"
+            >
+              <Image src="https://tglaren.com/favicon.ico" alt="tglaren" width={24} height={24} />
+            </a>
+            <a
+              href="https://crazysmm.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="crazysmm.com"
+              className="inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 transition"
+            >
+              <Image src="https://crazysmm.com/favicon.ico" alt="crazysmm" width={24} height={24} />
+            </a>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => router.push(selectedProject ? `/settings?project=${selectedProject}` : "/settings")}
+            >
               <Settings className="w-4 h-4 mr-2" />
               设置
             </Button>
@@ -127,13 +147,6 @@ export default function Dashboard() {
           </div>
         </div>
       </header>
-
-      {/* Database Status Panel */}
-      {showDatabaseStatus && (
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
-          <DatabaseConnectionStatus />
-        </div>
-      )}
 
       {/* Main Content */}
       <div className="flex">
@@ -165,6 +178,14 @@ export default function Dashboard() {
               内容管理
             </Button>
             <Button
+              variant={activeTab === "planner" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => setActiveTab("planner")}
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              内容策划
+            </Button>
+            <Button
               variant={activeTab === "twitter" ? "default" : "ghost"}
               className="w-full justify-start"
               onClick={() => setActiveTab("twitter")}
@@ -179,6 +200,14 @@ export default function Dashboard() {
             >
               <MessageSquare className="w-4 h-4 mr-2" />
               电报管理
+            </Button>
+            <Button
+              variant={activeTab === "images" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => setActiveTab("images")}
+            >
+              <ImageIcon className="w-4 h-4 mr-2" />
+              图片库
             </Button>
             <Button
               variant={activeTab === "analytics" ? "default" : "ghost"}
@@ -200,7 +229,7 @@ export default function Dashboard() {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 overflow-auto">
           {activeTab === "overview" && (
             <div className="space-y-6">
               {/* Project Status Cards */}
@@ -249,37 +278,21 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <Button
-                      variant="outline"
-                      className="h-20 flex-col bg-transparent"
-                      onClick={() => setActiveTab("content")}
-                    >
-                      <FileText className="w-6 h-6 mb-2" />
-                      创建内容
+                    <Button variant="outline" className="h-24 flex flex-col" onClick={() => setActiveTab("twitter")}>
+                      <Twitter className="h-8 w-8 mb-2" />
+                      <span>发布推文</span>
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="h-20 flex-col bg-transparent"
-                      onClick={() => setActiveTab("twitter")}
-                    >
-                      <Twitter className="w-6 h-6 mb-2" />
-                      发布推文
+                    <Button variant="outline" className="h-24 flex flex-col" onClick={() => setActiveTab("telegram")}>
+                      <MessageSquare className="h-8 w-8 mb-2" />
+                      <span>发布电报</span>
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="h-20 flex-col bg-transparent"
-                      onClick={() => setActiveTab("management")}
-                    >
-                      <Calendar className="w-6 h-6 mb-2" />
-                      管理任务
+                    <Button variant="outline" className="h-24 flex flex-col" onClick={() => setActiveTab("images")}>
+                      <ImageIcon className="h-8 w-8 mb-2" />
+                      <span>管理图片</span>
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="h-20 flex-col bg-transparent"
-                      onClick={() => setActiveTab("analytics")}
-                    >
-                      <BarChart3 className="w-6 h-6 mb-2" />
-                      查看数据
+                    <Button variant="outline" className="h-24 flex flex-col" onClick={() => setActiveTab("planner")}>
+                      <Sparkles className="h-8 w-8 mb-2" />
+                      <span>内容策划</span>
                     </Button>
                   </div>
                 </CardContent>
@@ -289,62 +302,42 @@ export default function Dashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>最近活动</CardTitle>
-                  <CardDescription>项目最新动态和更新</CardDescription>
+                  <CardDescription>项目的最新动态和活动</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center space-x-4 p-3 bg-blue-50 rounded-lg">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <div className="flex-1">
-                        <p className="font-medium">发布了新推文</p>
-                        <p className="text-sm text-muted-foreground">2小时前 - DeFi Protocol Alpha</p>
+                    <div className="flex items-start space-x-4">
+                      <div className="bg-blue-100 p-2 rounded-full">
+                        <Twitter className="h-4 w-4 text-blue-600" />
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-4 p-3 bg-green-50 rounded-lg">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <div className="flex-1">
-                        <p className="font-medium">完成了白皮书任务</p>
-                        <p className="text-sm text-muted-foreground">5小时前 - NFT Marketplace Beta</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-4 p-3 bg-purple-50 rounded-lg">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                      <div className="flex-1">
-                        <p className="font-medium">更新了项目进度</p>
-                        <p className="text-sm text-muted-foreground">1天前 - GameFi Platform</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* System Status */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>系统状态</CardTitle>
-                  <CardDescription>当前系统运行状态</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                       <div>
-                        <p className="text-sm font-medium">数据库连接</p>
-                        <p className="text-xs text-muted-foreground">正常运行</p>
+                        <p className="text-sm font-medium">推文已发布</p>
+                        <p className="text-xs text-muted-foreground">
+                          "我们很高兴宣布新功能即将上线！敬请期待更多详情。#加密货币 #区块链"
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">2小时前</p>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <div className="flex items-start space-x-4">
+                      <div className="bg-purple-100 p-2 rounded-full">
+                        <MessageSquare className="h-4 w-4 text-purple-600" />
+                      </div>
                       <div>
-                        <p className="text-sm font-medium">API 服务</p>
-                        <p className="text-xs text-muted-foreground">正常运行</p>
+                        <p className="text-sm font-medium">电报公告已发布</p>
+                        <p className="text-xs text-muted-foreground">
+                          "社区AMA活动将于本周五举行，欢迎大家参与！"
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">昨天</p>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <div className="flex items-start space-x-4">
+                      <div className="bg-green-100 p-2 rounded-full">
+                        <Users className="h-4 w-4 text-green-600" />
+                      </div>
                       <div>
-                        <p className="text-sm font-medium">社交媒体</p>
-                        <p className="text-xs text-muted-foreground">待配置</p>
+                        <p className="text-sm font-medium">新增团队成员</p>
+                        <p className="text-xs text-muted-foreground">李明加入了项目团队，担任市场营销经理</p>
+                        <p className="text-xs text-muted-foreground mt-1">2天前</p>
                       </div>
                     </div>
                   </div>
@@ -353,26 +346,14 @@ export default function Dashboard() {
             </div>
           )}
 
-          {activeTab === "management" && selectedProject && <EnhancedProjectManagement projectId={selectedProject} />}
-
-          {activeTab === "content" && selectedProject && <ContentManagement projectId={selectedProject} />}
-
-          {activeTab === "twitter" && selectedProject && <TwitterManagement projectId={selectedProject} />}
-
-          {activeTab === "telegram" && selectedProject && <TelegramManagement projectId={selectedProject} />}
-
-          {activeTab === "analytics" && selectedProject && <AdvancedAnalytics projectId={selectedProject} />}
-
+          {activeTab === "management" && <EnhancedProjectManagement projectId={selectedProject} />}
+          {activeTab === "content" && <ContentManagement projectId={selectedProject} />}
+          {activeTab === "planner" && <ContentPlanner projectId={selectedProject} />}
+          {activeTab === "twitter" && <EnhancedTwitterManagement projectId={selectedProject} />}
+          {activeTab === "telegram" && <EnhancedTelegramManagement projectId={selectedProject} />}
+          {activeTab === "images" && <EnhancedImageLibrary projectId={selectedProject} />}
+          {activeTab === "analytics" && <AdvancedAnalytics projectId={selectedProject} />}
           {activeTab === "users" && <UserManagement />}
-
-          {!selectedProject && activeTab !== "overview" && activeTab !== "users" && (
-            <div className="text-center py-12">
-              <Calendar className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">请先选择项目</h3>
-              <p className="text-muted-foreground mb-4">选择一个项目来开始管理相关功能</p>
-              <CreateProjectDialog onProjectCreated={handleProjectCreated} />
-            </div>
-          )}
         </main>
       </div>
     </div>

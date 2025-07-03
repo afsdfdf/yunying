@@ -1,30 +1,741 @@
-# Project management system
+# 云营项目管理系统
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+一个现代化的Web3项目管理系统，支持Twitter和Telegram内容管理、图片管理、任务管理等功能。
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/a77694688-qqcoms-projects/v0-project-management-system)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/Xt9IXw3XNKx)
+## 功能特性
 
-## Overview
+- 🐦 **Twitter管理**: 推文创建、批量上传、定时发布、数据分析
+- 📱 **Telegram管理**: 帖子管理、频道运营、互动分析
+- 🖼️ **图片管理**: 图片上传、分类管理、批量处理
+- 📊 **数据分析**: 互动数据统计、趋势分析、效果评估
+- 👥 **项目管理**: 任务分配、进度跟踪、团队协作
+- 📝 **内容策划**: 内容规划、模板管理、工作流
+- 🛒 **批量下单**: 批量生成下单数据，支持随机数量生成
+- ⚙️ **项目设置**: 项目信息管理、删除项目、资料修改
+- 🔄 **全局任务管理**: 跨项目的统一任务管理视图
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+## 推文库图片上传功能
 
-## Deployment
+### 功能特点
+- **直接上传**: 在推文撰写界面直接上传图片到项目图片库
+- **智能关联**: 上传的图片自动关联到当前推文
+- **分类标签**: 支持为上传的图片设置分类和标签
+- **批量上传**: 支持一次上传多张图片（最多10张）
+- **实时预览**: 上传后立即显示在推文图片列表中
+- **图片管理**: 新增独立的图片管理标签页，方便管理所有图片资源
 
-Your project is live at:
+### 使用方法
 
-**[https://vercel.com/a77694688-qqcoms-projects/v0-project-management-system](https://vercel.com/a77694688-qqcoms-projects/v0-project-management-system)**
+#### 1. 图片管理标签页
+1. 进入推文管理页面，选择"图片管理"标签
+2. 在图片管理页面可以：
+   - 上传新图片到项目图片库
+   - 批量上传多张图片
+   - 查看所有项目图片的网格展示
+   - 选择图片添加到推文
+   - 删除不需要的图片
+   - 切换网格/列表视图
 
-## Build your app
+#### 2. 在推文撰写界面上传图片
+1. 进入推文管理页面，选择"撰写推文"标签
+2. 在推文内容输入框下方，点击"上传图片"按钮
+3. 在弹出的对话框中：
+   - 选择图片分类（可选）
+   - 输入图片标签，用逗号分隔（可选）
+   - 拖拽图片到上传区域或点击选择文件
+4. 上传完成后，图片会自动添加到推文图片列表
 
-Continue building your app on:
+#### 3. 从图片库选择图片
+1. 点击"添加图片"按钮打开图片选择器
+2. 从项目图片库中选择已有图片
+3. 选中的图片会显示在推文图片预览区域
 
-**[https://v0.dev/chat/projects/Xt9IXw3XNKx](https://v0.dev/chat/projects/Xt9IXw3XNKx)**
+#### 4. 管理推文图片
+- **预览**: 已选择的图片会显示缩略图预览
+- **删除**: 鼠标悬停在图片上，点击红色X按钮删除
+- **限制**: 每条推文最多支持4张图片
+- **排序**: 图片按选择顺序排列
 
-## How It Works
+### 图片分类
+- **项目Logo**: 项目标识和品牌图片
+- **横幅图片**: 横幅、封面等大尺寸图片
+- **社交媒体**: 适合社交平台发布的图片
+- **教程图片**: 说明文档和教程配图
+- **营销素材**: 推广和营销相关图片
+- **其他**: 其他类型图片
 
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+## 技术栈
+
+- **前端**: Next.js 14, React, TypeScript, Tailwind CSS
+- **后端**: Next.js API Routes, Supabase
+- **数据库**: PostgreSQL (via Supabase)
+- **存储**: Supabase Storage
+- **UI组件**: shadcn/ui
+
+## 快速开始
+
+### 1. 环境设置
+
+```bash
+# 克隆项目
+git clone <repository-url>
+cd yunying
+
+# 安装依赖
+pnpm install
+
+# 复制环境变量文件
+cp env.example .env.local
+```
+
+### 2. 数据库设置
+
+在Supabase中执行以下SQL脚本（按顺序）：
+
+1. `scripts/01-create-tables.sql` - 创建基础表结构
+2. `scripts/02-seed-data.sql` - 插入示例数据
+3. `scripts/03-create-exec-function.sql` - 创建执行函数
+4. `scripts/04-enhanced-database.sql` - 增强数据库功能
+5. `scripts/05-create-exec-function.sql` - 创建执行函数
+6. `scripts/06-add-meta-columns.sql` - **重要：添加meta和tags列**
+7. `scripts/08-safe-image-migration.sql` - **新增：安全的图片表迁移脚本**
+
+### 3. 环境变量配置
+
+在 `.env.local` 中配置：
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### 4. 启动开发服务器
+
+```bash
+pnpm dev
+```
+
+访问 http://localhost:3000 开始使用。
+
+## 重要问题解决
+
+### 推文库中无中文翻译和提示词内容的问题
+
+**问题原因**: 数据库表结构中缺少 `meta` 和 `tags` 列，导致中文翻译和图片提示词无法保存。
+
+**解决方案**:
+
+1. **执行数据库迁移脚本**:
+   ```sql
+   -- 在Supabase SQL编辑器中执行 scripts/06-add-meta-columns.sql
+   ```
+
+2. **验证数据完整性**:
+   ```bash
+   node tests/test-meta-data.js
+   ```
+
+3. **检查批量上传功能**:
+   - 确保批量上传时正确传递 `meta` 数据
+   - 验证中文翻译和图片提示词是否正确保存
+
+**数据流程**:
+```
+批量上传 → 解析文本 → 构建meta对象 → 保存到数据库 → 推文库显示
+```
+
+**meta对象结构**:
+```json
+{
+  "english_content": "英文内容",
+  "chinese_translation": "中文翻译",
+  "image_prompt": "图片提示词"
+}
+```
+
+## 项目设置功能
+
+### 功能特点
+- **项目信息管理**: 修改项目名称、描述、状态等基本信息
+- **社交媒体配置**: 管理Twitter、Telegram等社交媒体账号
+- **代币信息设置**: 配置代币符号、合约地址、市值等信息
+- **安全删除**: 支持删除项目及其所有相关数据
+- **分类管理**: 按功能分类管理不同设置项
+
+### 使用方法
+
+#### 1. 进入项目设置
+1. 在主页点击右上角的"设置"按钮
+2. 或在项目管理页面点击"项目设置"按钮
+3. 系统会自动跳转到项目设置页面
+
+#### 2. 基本信息管理
+1. 在"基本信息"标签页中：
+   - 修改项目名称和描述
+   - 更改项目状态（规划中、开发中、已上线等）
+   - 设置官方网站链接
+
+#### 3. 社交媒体配置
+1. 在"社交媒体"标签页中：
+   - 设置Twitter账号（格式：@username）
+   - 配置Telegram群组（格式：@groupname）
+   - 点击图标按钮可直接访问对应平台
+
+#### 4. 代币信息设置
+1. 在"代币信息"标签页中：
+   - 设置代币符号（如：BTC、ETH）
+   - 配置代币合约地址
+   - 输入总供应量和市值
+   - 设置发行日期
+
+#### 5. 删除项目
+1. 在"危险操作"标签页中：
+   - 查看删除警告和影响说明
+   - 点击"删除项目"按钮
+   - 输入项目名称确认删除
+   - 系统会删除所有相关数据（推文、图片、任务等）
+
+### 安全特性
+- **确认机制**: 删除项目需要输入完整的项目名称
+- **数据清理**: 删除项目时会清理所有相关数据
+- **操作记录**: 所有设置更改都有操作记录
+- **权限控制**: 只有项目管理员可以删除项目
+
+### 数据关联
+删除项目时会同时删除：
+- 所有推文和电报帖子
+- 所有图片和媒体文件
+- 所有任务和里程碑
+- 项目配置和设置
+- 相关统计数据
+
+### 推文库图片管理按钮无响应的问题
+
+**问题原因**: 
+1. `EnhancedTwitterManagement` 组件中缺少图片管理标签页，导致点击图片管理按钮时无响应
+2. 推文库中每条推文后面的"上传图片"按钮没有绑定点击事件
+
+**解决方案**:
+
+1. **添加图片管理标签页**:
+   - 在TabsList中添加了"图片管理"标签
+   - 创建了完整的图片管理TabsContent组件
+   - 集成了图片上传、批量上传、图片库展示等功能
+
+2. **修复推文列表中的上传图片按钮**:
+   - 为推文库中每条推文的"上传图片"按钮添加了点击事件
+   - 创建了 `handleTweetImageUpload` 和 `handleTweetImageUploaded` 处理函数
+   - 添加了 `editingTweetId` 状态来跟踪当前正在编辑的推文
+   - 创建了新的API端点 `/api/twitter-posts/[id]` 来处理推文更新
+
+3. **功能特性**:
+   - 独立的图片管理界面
+   - 图片网格展示和列表视图切换
+   - 图片选择和删除功能
+   - 已选图片预览
+   - 与推文撰写功能无缝集成
+   - 支持为特定推文上传图片
+
+4. **使用方法**:
+   - 点击"图片管理"标签进入图片管理页面
+   - 在推文库中点击任意推文的"上传图片"按钮为特定推文上传图片
+   - 上传新图片或从现有图片库中选择
+   - 在推文撰写时可以直接使用图片管理功能
+
+**修复文件**: 
+- `components/enhanced-twitter-management.tsx`
+- `app/api/twitter-posts/[id]/route.ts` (新增)
+
+### 推文库添加日期时间属性
+
+**功能增强**:
+为推文库添加了完整的日期时间显示和管理功能。
+
+**新增功能**:
+
+1. **日期时间列显示**:
+   - 在列表视图中添加了专门的日期时间列
+   - 显示创建时间、发布时间、计划时间
+   - 使用中文格式显示日期时间
+
+### 批量上传功能优化 - 新增时间标签支持
+
+**功能增强**:
+批量上传功能现在支持 `[TIME]` 标签，可以设置推文的计划发布时间，并自动同步到推文库。
+
+**新增功能**:
+
+1. **时间标签支持**:
+   - 新增 `[TIME]` 标签用于设置计划发布时间
+   - 支持ISO格式时间字符串：`2024-01-15T10:00:00Z`
+   - 自动解析时间并设置推文状态为"已计划"
+
+2. **完整的标记前缀系统**:
+   ```
+   [EN] 英文推文正文
+   [CN] 中文对照翻译
+   [TAGS] 标签（以#开头，空格分隔）
+   [IMG] 图片提示词
+   [TIME] 计划发布时间（ISO格式）
+   [END] 推文结束标记
+   ```
+
+3. **CSV文件支持**:
+   - 新增 `scheduled_time` 列支持时间设置
+   - 自动转换CSV数据为标记格式
+   - 提供包含时间列的模板文件下载
+
+4. **智能状态管理**:
+   - 有时间的推文自动设置为"已计划"状态
+   - 无时间的推文保持"草稿"状态
+   - 时间格式验证和错误处理
+
+5. **UI增强**:
+   - 在结构化编辑中显示时间信息
+   - 时间格式化显示（中文格式）
+   - 时间标签徽章显示
+   - 计划时间独立显示区域
+
+### GROQ AI集成 - 智能内容生成
+
+**功能增强**:
+集成了GROQ AI服务，为内容策划提供智能内容生成功能，包括推文、Telegram帖子、图片提示词和翻译服务。
+
+**新增功能**:
+
+1. **AI内容生成服务** (`lib/groq-service.ts`):
+   - 使用GROQ Llama3-8b模型进行内容生成
+   - 支持推文、Telegram帖子、内容策划方案生成
+   - 提供图片提示词生成和内容翻译功能
+   - 智能错误处理和备用方案
+
+2. **内容生成API** (`/api/content/generate`):
+   - 支持多种内容类型：`tweets`, `telegram`, `content-plan`, `image-prompt`, `translate`
+   - 完整的参数验证和错误处理
+   - 返回结构化的JSON数据
+
+3. **内容策划AI增强**:
+   - 智能生成推文和Telegram帖子内容
+   - 自动生成中文翻译和图片提示词
+   - 支持多种语调风格：专业正式、轻松随意、热情积极、教育科普
+   - 支持多种语言：英文、中文、中英双语
+
+4. **AI生成选项**:
+   - 包含中文翻译选项
+   - 生成图片提示词选项
+   - 语调风格选择
+   - 主要语言选择
+
+5. **内容展示增强**:
+   - 显示英文原文和中文翻译
+   - 显示图片提示词
+   - 显示标签和建议时间
+   - 支持一键复制功能
+
+**使用示例**:
+
+```javascript
+// 生成推文
+const response = await fetch('/api/content/generate', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    type: 'tweets',
+    projectName: 'MyCryptoProject',
+    projectDescription: '创新的DeFi项目',
+    contentType: 'announcement',
+    topics: ['DeFi', '安全'],
+    tone: 'professional',
+    language: 'bilingual',
+    count: 5,
+    includeTranslation: true,
+    includeImagePrompt: true
+  })
+});
+```
+
+**技术特性**:
+- 使用GROQ Llama3-8b-8192模型
+- 支持JSON格式响应解析
+- 智能错误处理和备用方案
+- 完整的TypeScript类型定义
+- 模块化服务架构
+
+**使用示例**:
+
+1. **文本输入格式**:
+   ```
+   [EN] We are excited to announce our new feature!
+   [CN] 我们很高兴宣布我们的新功能！
+   [TAGS] #crypto #blockchain #newfeature
+   [IMG] A modern interface with glowing elements
+   [TIME] 2024-01-15T10:00:00Z
+   [END]
+   ```
+
+2. **CSV文件格式**:
+   ```csv
+   english_content,chinese_translation,tags,image_prompt,scheduled_time
+   "New feature announcement","新功能公告","#crypto #blockchain","Modern interface","2024-01-15T10:00:00Z"
+   ```
+
+3. **上传流程**:
+   - 解析时间标签 → 验证时间格式 → 设置推文状态 → 保存到数据库 → 同步到推文库
+
+**技术实现**:
+- 时间解析和验证逻辑
+- 自动状态设置（draft/scheduled）
+- 数据库字段映射（scheduled_for）
+- 前端时间格式化显示
+- 错误处理和用户提示
+
+2. **网格视图日期时间**:
+   - 在网格视图卡片中添加日期时间信息
+   - 紧凑显示创建、发布、计划时间
+   - 使用不同颜色区分不同类型的时间
+
+3. **增强排序功能**:
+   - 添加了"最新创建"、"最早创建"排序选项
+   - 添加了"最新发布"、"最早发布"排序选项
+   - 保留了原有的计划时间和互动量排序
+
+4. **时间显示格式**:
+   - 创建时间：显示完整的日期时间
+   - 发布时间：绿色显示，仅显示日期
+   - 计划时间：蓝色显示，仅显示日期
+   - 使用中文本地化格式
+
+**使用方法**:
+- 在推文库中可以看到每条推文的完整时间信息
+- 使用排序下拉菜单按不同时间维度排序
+- 在列表视图和网格视图中都能看到时间信息
+
+**技术实现**:
+- 使用 `toLocaleString('zh-CN')` 和 `toLocaleDateString('zh-CN')` 进行本地化
+- 支持 `created_at`、`publishedAt`、`scheduledFor` 三个时间字段
+- 智能处理空值，未发布/未安排的推文不会显示对应时间
+
+### 批量下单功能
+
+**功能增强**:
+在内容管理模块中添加了批量下单工具，支持批量生成下单数据，包括服务ID、下单链接和数量。
+
+**新增功能**:
+
+1. **三列输入界面**:
+   - **服务ID列**: 每行输入一个服务ID
+   - **下单链接列**: 每行输入一个对应的下单链接
+   - **数量列**: 支持固定数量和随机范围生成
+
+2. **随机数量生成**:
+   - 支持输入格式：`最小值,最大值`
+   - 例如：`100,200` 会生成100-200之间的随机数
+   - 自动处理范围验证和错误输入
+
+3. **智能数据匹配**:
+   - 自动匹配服务ID和下单链接
+   - 支持不同长度的输入数据
+   - 自动填充缺失的数据项
+
+4. **结果生成和复制**:
+   - 生成格式：`服务ID|下单链接|数量`
+   - 一键复制生成结果
+   - 清空数据功能
+
+**使用方法**:
+
+1. **输入服务ID**:
+   ```
+   1001
+   1002
+   1003
+   ```
+
+2. **输入下单链接**:
+   ```
+   https://example.com/order1
+   https://example.com/order2
+   https://example.com/order3
+   ```
+
+3. **输入数量**:
+   ```
+   100
+   200,300
+   150
+   ```
+
+4. **生成结果**:
+   ```
+   1001|https://example.com/order1|100
+   1002|https://example.com/order2|245
+   1003|https://example.com/order3|150
+   ```
+
+**技术特性**:
+- 响应式三列布局设计
+- 实时数据验证和错误处理
+- 随机数生成算法
+- 剪贴板API集成
+- 用户友好的界面提示
+
+### 推文自动时间标记功能
+
+**功能增强**:
+为推文添加了自动时间标记功能，在保存推文时自动在内容前添加 `[time]` 标记。
+
+**新增功能**:
+
+1. **自动时间标记**:
+   - 保存推文时自动在内容前添加 `[time]` 标记
+   - 时间格式：`[time]YYYY-MM-DD HH:mm:ss`
+   - 使用中文本地化时间格式
+
+2. **时间标记显示**:
+   - 在推文库中突出显示 `[time]` 标记
+   - 列表视图和网格视图都支持时间标记显示
+   - 时间标记使用蓝色高亮显示
+
+3. **内容解析**:
+   - 自动解析推文内容中的 `[time]` 标记
+   - 分离时间信息和推文正文
+   - 智能处理有无时间标记的推文
+
+4. **用户提示**:
+   - 推文输入框提示用户会自动添加时间标记
+   - 界面描述中说明时间标记功能
+   - 清晰的功能说明和使用指导
+
+**使用方法**:
+- 在推文撰写界面输入推文内容
+- 点击保存时，系统会自动在内容前添加时间标记
+- 在推文库中可以清楚看到每条推文的创建时间标记
+
+**技术实现**:
+- 使用正则表达式解析 `[time]` 标记
+- 使用 `toLocaleString('zh-CN')` 格式化时间
+- 在列表和网格视图中分别处理时间标记显示
+- 支持向后兼容，无时间标记的推文正常显示
+
+**示例**:
+```
+输入内容: "这是一条测试推文"
+保存后: "[time]2024-01-15 14:30:25\n这是一条测试推文"
+```
+
+### 无法将图片加入到推文的问题
+
+**问题原因**: 
+数据库表结构使用 `twitter_post_images` 关联表来存储推文和图片的多对多关系，而不是直接在 `twitter_posts` 表中存储 `images` 列。API尝试直接更新不存在的 `images` 列导致错误。
+
+**解决方案**:
+
+1. **修改API逻辑**:
+   - 检测请求中是否包含 `images` 字段
+   - 如果包含，先删除现有的图片关联记录
+   - 然后插入新的图片关联记录到 `twitter_post_images` 表
+   - 移除 `images` 字段，避免更新 `twitter_posts` 表
+
+2. **数据库操作流程**:
+   ```
+   接收图片ID数组 → 删除现有关联 → 插入新关联 → 返回成功
+   ```
+
+3. **错误处理**:
+   - 完善的错误处理和用户提示
+   - 详细的错误日志记录
+   - 优雅的错误响应
+
+**修复文件**: `app/api/twitter-posts/[id]/route.ts`
+
+**数据库表结构**:
+- `twitter_posts`: 存储推文基本信息
+- `images`: 存储图片元数据
+- `twitter_post_images`: 关联表，存储推文和图片的关系
+
+## 使用指南
+
+### 批量上传推文
+
+1. 使用标记前缀格式：
+   ```
+   [EN] 英文推文内容
+   [CN] 中文翻译内容
+   [TAGS] #标签1 #标签2
+   [IMG] 图片提示词
+   [END]
+   ```
+
+2. 或使用CSV格式：
+   ```csv
+   english_content,chinese_translation,tags,image_prompt
+   "英文内容","中文翻译","#标签1 #标签2","图片提示词"
+   ```
+
+### 推文管理
+
+- **列表视图**: 详细显示推文内容和meta数据
+- **网格视图**: 卡片式展示，适合快速浏览
+- **排序功能**: 按创建时间、计划时间、互动量排序
+- **筛选功能**: 按状态、标签筛选
+
+### 图片管理
+
+- 支持多种图片格式
+- 自动生成缩略图
+- 分类管理
+- 批量上传
+
+## API文档
+
+### Twitter Posts API
+
+- `GET /api/twitter-posts?projectId=xxx` - 获取推文列表
+- `POST /api/twitter-posts` - 创建新推文
+
+### Images API
+
+- `GET /api/images?projectId=xxx` - 获取图片列表
+- `POST /api/images` - 上传图片
+
+### Projects API
+
+- `GET /api/projects` - 获取项目列表
+- `POST /api/projects` - 创建新项目
+
+## 开发指南
+
+### 项目结构
+
+```
+yunying/
+├── app/                 # Next.js App Router
+│   ├── api/            # API路由
+│   ├── components/     # 页面组件
+│   └── globals.css     # 全局样式
+├── components/         # 可复用组件
+│   ├── ui/            # UI基础组件
+│   └── *.tsx          # 功能组件
+├── lib/               # 工具库
+│   ├── database.ts    # 数据库操作
+│   └── utils.ts       # 工具函数
+├── scripts/           # 数据库脚本
+└── tests/             # 测试文件
+```
+
+### 添加新功能
+
+1. 创建数据库迁移脚本
+2. 更新类型定义
+3. 实现API端点
+4. 创建前端组件
+5. 添加测试用例
+
+## 故障排除
+
+### 常见问题
+
+1. **推文meta数据不显示**
+   - 检查是否执行了 `scripts/06-add-meta-columns.sql`
+   - 验证数据库表结构
+
+2. **图片上传失败**
+   - 检查Supabase Storage配置
+   - 验证文件大小限制
+
+3. **API调用错误**
+   - 检查环境变量配置
+   - 验证数据库连接
+
+### 调试工具
+
+- 使用 `tests/test-meta-data.js` 验证meta数据功能
+- 检查浏览器开发者工具的网络请求
+- 查看Supabase日志
+
+## 贡献指南
+
+1. Fork项目
+2. 创建功能分支
+3. 提交更改
+4. 创建Pull Request
+
+## 许可证
+
+MIT License
+
+## 更新日志
+
+### 2024-01-15 - 新增批量下单功能
+
+**新增功能**:
+- 在内容管理模块中添加了批量下单工具
+- 支持三列输入：服务ID、下单链接、数量
+- 支持随机数量生成（格式：最小值,最大值）
+- 智能数据匹配，自动处理不同长度的输入
+- 一键复制生成结果功能
+- 生成格式：服务ID|下单链接|数量
+
+**技术特性**:
+- 响应式三列布局设计
+- 实时数据验证和错误处理
+- 随机数生成算法
+- 剪贴板API集成
+- 用户友好的界面提示
+
+**使用方法**:
+- 在内容管理页面选择"批量下单"标签
+- 左侧输入服务ID（每行一个）
+- 中间输入下单链接（每行一个）
+- 右侧输入数量（支持固定数字或"100,200"格式）
+- 点击"生成结果"按钮
+- 复制生成的结果
+
+### 2024-01-15 - 删除数据库状态功能
+
+**变更内容**:
+- 删除了数据库状态检查功能，简化系统架构
+- 移除了数据库连接状态组件 (`DatabaseStatus`, `DatabaseConnectionStatus`)
+- 删除了数据库状态API (`/api/database/status`)
+- 移除了数据库测试页面 (`/database-test`)
+- 从主页面移除了数据库状态按钮和面板
+- 删除了相关的测试脚本和诊断工具
+- 更新了设置指南，移除了数据库状态检查链接
+
+**原因**:
+- 简化用户界面，减少不必要的复杂性
+- 数据库连接状态检查功能在实际使用中较少被使用
+- 系统已经稳定运行，不需要频繁的数据库状态监控
+
+**影响**:
+- 用户界面更加简洁
+- 减少了代码维护负担
+- 不影响核心功能的使用
+
+## 联系方式
+
+如有问题，请提交Issue或联系开发团队。
+
+## 浏览器LOGO（favicon）
+
+本项目已自动生成并集成了现代Web3风格的SVG LOGO，作为浏览器标签页的小图标（favicon）。
+
+- LOGO文件位置：`public/favicon.svg`
+- 引用方式：已在 `app/layout.tsx` 的 `<head>` 中自动引入，无需手动操作。
+- 支持高分屏、深浅色主题，兼容主流浏览器。
+- 如需更换LOGO，只需替换 `public/favicon.svg` 文件即可。
+
+示例SVG LOGO设计如下：
+```svg
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="16" fill="url(#paint0_linear)"/>
+  <path d="M32 12L44 32L32 52L20 32L32 12Z" fill="white" fill-opacity="0.9"/>
+  <circle cx="32" cy="32" r="8" fill="#00FFD1" fill-opacity="0.8"/>
+  <defs>
+    <linearGradient id="paint0_linear" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F2027"/>
+      <stop offset="1" stop-color="#2C5364"/>
+    </linearGradient>
+  </defs>
+</svg>
+```

@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -29,10 +28,12 @@ export default function CreateProjectDialog({ onProjectCreated }: CreateProjectD
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    status: "planning",
-    website_url: "",
-    twitter_handle: "",
-    telegram_handle: "",
+    logo_url: "",
+    token_symbol: "",
+    token_contract: "",
+    launch_date: "",
+    total_supply: "",
+    market_cap: "",
   })
 
   const handleChange = (key: keyof typeof formData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -43,10 +44,18 @@ export default function CreateProjectDialog({ onProjectCreated }: CreateProjectD
     setLoading(true)
 
     try {
+      // 处理数值字段
+      const processedData = {
+        ...formData,
+        total_supply: formData.total_supply ? parseFloat(formData.total_supply) : null,
+        market_cap: formData.market_cap ? parseFloat(formData.market_cap) : null,
+        launch_date: formData.launch_date || null,
+      }
+
       const res = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(processedData),
       })
 
       const result = await res.json()
@@ -60,10 +69,12 @@ export default function CreateProjectDialog({ onProjectCreated }: CreateProjectD
       setFormData({
         name: "",
         description: "",
-        status: "planning",
-        website_url: "",
-        twitter_handle: "",
-        telegram_handle: "",
+        logo_url: "",
+        token_symbol: "",
+        token_contract: "",
+        launch_date: "",
+        total_supply: "",
+        market_cap: "",
       })
       setOpen(false)
       // Optional: refresh or mutate SWR/React-Query cache instead
@@ -106,19 +117,13 @@ export default function CreateProjectDialog({ onProjectCreated }: CreateProjectD
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">项目状态</Label>
-              <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="选择状态" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="planning">规划中</SelectItem>
-                  <SelectItem value="development">开发中</SelectItem>
-                  <SelectItem value="testing">测试中</SelectItem>
-                  <SelectItem value="active">已上线</SelectItem>
-                  <SelectItem value="maintenance">维护中</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="token_symbol">代币符号</Label>
+              <Input
+                id="token_symbol"
+                value={formData.token_symbol}
+                onChange={handleChange("token_symbol")}
+                placeholder="例如：BTC, ETH"
+              />
             </div>
           </div>
 
@@ -133,34 +138,58 @@ export default function CreateProjectDialog({ onProjectCreated }: CreateProjectD
             />
           </div>
 
-          {/* 外部链接 */}
+          {/* 项目详情 */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="logo_url">Logo URL</Label>
+              <Input
+                id="logo_url"
+                type="url"
+                value={formData.logo_url}
+                onChange={handleChange("logo_url")}
+                placeholder="https://example.com/logo.png"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="token_contract">合约地址</Label>
+              <Input
+                id="token_contract"
+                value={formData.token_contract}
+                onChange={handleChange("token_contract")}
+                placeholder="0x..."
+              />
+            </div>
+          </div>
+
+          {/* 项目数据 */}
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="website">官方网站</Label>
+              <Label htmlFor="launch_date">发布日期</Label>
               <Input
-                id="website"
-                type="url"
-                value={formData.website_url}
-                onChange={handleChange("website_url")}
-                placeholder="https://example.com"
+                id="launch_date"
+                type="date"
+                value={formData.launch_date}
+                onChange={handleChange("launch_date")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="twitter">Twitter 账号</Label>
+              <Label htmlFor="total_supply">总供应量</Label>
               <Input
-                id="twitter"
-                value={formData.twitter_handle}
-                onChange={handleChange("twitter_handle")}
-                placeholder="@username"
+                id="total_supply"
+                type="number"
+                value={formData.total_supply}
+                onChange={handleChange("total_supply")}
+                placeholder="1000000"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="telegram">Telegram 群组</Label>
+              <Label htmlFor="market_cap">市值 (USD)</Label>
               <Input
-                id="telegram"
-                value={formData.telegram_handle}
-                onChange={handleChange("telegram_handle")}
-                placeholder="@groupname"
+                id="market_cap"
+                type="number"
+                value={formData.market_cap}
+                onChange={handleChange("market_cap")}
+                placeholder="500000"
               />
             </div>
           </div>

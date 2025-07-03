@@ -1,17 +1,13 @@
 import { NextResponse } from "next/server"
 import { getTasks, createTask, updateTaskStatus } from "@/lib/database"
 
-/** GET /api/tasks?projectId=xxx */
+/** GET /api/tasks 或 /api/tasks?projectId=xxx */
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const projectId = searchParams.get("projectId")
 
-  if (!projectId) {
-    return NextResponse.json({ error: "projectId is required" }, { status: 400 })
-  }
-
   try {
-    const tasks = await getTasks(projectId)
+    const tasks = await getTasks(projectId || undefined)
     return NextResponse.json({ tasks })
   } catch (err) {
     console.error("GET /api/tasks error:", err)
@@ -27,8 +23,8 @@ export async function POST(req: Request) {
   try {
     const data = await req.json()
 
-    if (!data?.title || !data?.project_id) {
-      return NextResponse.json({ error: "title & project_id are required" }, { status: 400 })
+    if (!data?.title) {
+      return NextResponse.json({ error: "title is required" }, { status: 400 })
     }
 
     const task = await createTask(data)

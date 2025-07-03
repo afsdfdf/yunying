@@ -10,15 +10,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
 import { Plus, Edit, Trash2, Globe, Twitter, MessageSquare } from "lucide-react"
-import { getProject, updateProject, getTasks } from "@/lib/database"
+import { getProject, updateProject } from "@/lib/database"
 
 interface ProjectManagementProps {
   projectId: string
 }
 
+interface Task {
+  id: string
+  title: string
+  priority: string
+  status: string
+  due_date?: string
+}
+
 export default function ProjectManagement({ projectId }: ProjectManagementProps) {
   const [date, setDate] = useState<Date>()
-  const [tasks, setTasks] = useState([])
+  const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
 
   const [projectInfo, setProjectInfo] = useState({
@@ -31,45 +39,36 @@ export default function ProjectManagement({ projectId }: ProjectManagementProps)
   useEffect(() => {
     async function loadData() {
       try {
-        const [project, projectTasks] = await Promise.all([getProject(projectId), getTasks(projectId)])
-
+        const project: any = await getProject(projectId)
         if (!project) {
           setLoading(false)
-          return //  <-- skip further processing
+          return
         }
-
         setProjectInfo({
           website: project.website_url || "",
           twitter: project.twitter_handle || "",
           telegram: project.telegram_handle || "",
           description: project.description || "",
         })
-
-        setTasks(
-          projectTasks.map((task) => ({
-            id: task.id,
-            title: task.title,
-            priority: task.priority,
-            status: task.status,
-            dueDate: task.due_date,
-          })),
-        )
+        // 全局获取所有任务
+        const res = await fetch("/api/tasks")
+        const data = await res.json()
+        setTasks(data.tasks || [])
       } catch (error) {
         console.error("Error loading project data:", error)
       } finally {
         setLoading(false)
       }
     }
-
     loadData()
   }, [projectId])
 
   const handleSaveProject = async () => {
     try {
       await updateProject(projectId, {
-        website_url: projectInfo.website,
-        twitter_handle: projectInfo.twitter,
-        telegram_handle: projectInfo.telegram,
+        website_url: (projectInfo as any).website,
+        twitter_handle: (projectInfo as any).twitter,
+        telegram_handle: (projectInfo as any).telegram,
         description: projectInfo.description,
       })
       // Show success message
@@ -202,7 +201,7 @@ export default function ProjectManagement({ projectId }: ProjectManagementProps)
                         >
                           {task.status === "completed" ? "已完成" : task.status === "in-progress" ? "进行中" : "待开始"}
                         </Badge>
-                        <span className="text-sm text-muted-foreground">截止: {task.dueDate}</span>
+                        <span className="text-sm text-muted-foreground">截止: {task.due_date}</span>
                       </div>
                     </div>
                     <div className="flex space-x-2">
