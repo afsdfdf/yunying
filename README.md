@@ -739,3 +739,52 @@ MIT License
   </defs>
 </svg>
 ```
+
+## 环境变量配置（Vercel/本地均适用）
+
+请在 Vercel 项目 Settings > Environment Variables 页面，或本地 .env.local 文件中，填写以下所有环境变量：
+
+### 1. Supabase 配置（必须，核心功能依赖）
+
+| 变量名                        | 说明                                                         | 获取方式/示例                      |
+|-------------------------------|--------------------------------------------------------------|------------------------------------|
+| NEXT_PUBLIC_SUPABASE_URL      | Supabase 项目URL（前端和后端都用）                           | 例：https://xxxx.supabase.co       |
+| NEXT_PUBLIC_SUPABASE_ANON_KEY | Supabase 匿名公钥（anon key，前端用）                        | 例：eyJhbGciOi...                  |
+| SUPABASE_SERVICE_ROLE_KEY     | Supabase服务角色密钥（后端用，部分管理操作需要）              | 例：eyJhbGciOi...                  |
+
+> 这3个都在 Supabase 后台 Project Settings > API 页面可以找到。
+
+### 2. Vercel Blob 存储（如用到 Vercel Blob，需填写）
+
+| 变量名                | 说明                       | 获取方式/示例         |
+|-----------------------|----------------------------|-----------------------|
+| BLOB_READ_WRITE_TOKEN | Vercel Blob 读写Token      | Vercel Blob后台获取   |
+
+### 3. Cloudinary 配置（如用到图片云存储，需填写）
+
+| 变量名                | 说明                       | 获取方式/示例         |
+|-----------------------|----------------------------|-----------------------|
+| CLOUDINARY_CLOUD_NAME | Cloudinary云名             | cloudinary后台获取    |
+| CLOUDINARY_API_KEY    | Cloudinary API Key         | cloudinary后台获取    |
+| CLOUDINARY_API_SECRET | Cloudinary API Secret      | cloudinary后台获取    |
+
+### 4. 应用配置
+
+| 变量名                | 说明                       | 示例值                |
+|-----------------------|----------------------------|-----------------------|
+| NEXT_PUBLIC_APP_URL   | 你的前端访问地址           | https://yourdomain.com|
+
+### 5. 安全与日志（可选）
+
+| 变量名                | 说明                       | 示例值                |
+|-----------------------|----------------------------|-----------------------|
+| ENABLE_STRICT_SECURITY| 是否启用严格安全措施       | true 或 false         |
+| LOG_LEVEL             | 日志级别                   | debug/info/warn/error |
+
+### 6. 填写建议
+
+- 所有变量名和变量值都要一一填写，不能留空或用占位符。
+- 没用到的功能（如没用Cloudinary、Blob）可以不填，但建议先补全Supabase相关。
+- 推荐 Production、Preview 环境都填写一遍，方便预览和正式环境都能用。
+
+如需详细获取方法或某一项不会填，详见本README或联系开发者。
