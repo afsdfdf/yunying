@@ -13,8 +13,8 @@ import Image from "next/image"
 import Link from "next/link"
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("fortunaeduardo364@gmail.com")
-  const [password, setPassword] = useState("changcheng")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
